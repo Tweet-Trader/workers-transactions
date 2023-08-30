@@ -1,0 +1,6 @@
+DROP TABLE IF EXISTS Users;
+CREATE TABLE IF NOT EXISTS Users(
+  twitter_id TEXT PRIMARY KEY,
+  wallet_address TEXT NOT NULL UNIQUE,
+  private_key TEXT NOT NULL UNIQUE,
+);
