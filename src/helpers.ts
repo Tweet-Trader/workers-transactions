@@ -1,28 +1,4 @@
-import type { IRequest } from 'itty-router'
-import { http, createPublicClient } from 'viem'
-import { mainnet } from 'viem/chains'
 import { defineChain } from 'viem'
-import { v2FactoryAbi } from './abis/v2Factory'
-import { pairAbi } from './abis/pair'
-
-interface Env {
-	RPC_URL: string;
-	// DB: 
-	// Example binding to KV. Learn more at https://developers.cloudflare.com/workers/runtime-apis/kv/
-	keys: KVNamespace;
-	//
-	// Example binding to Durable Object. Learn more at https://developers.cloudflare.com/workers/runtime-apis/durable-objects/
-	// MY_DURABLE_OBJECT: DurableObjectNamespace;
-	//
-	// Example binding to R2. Learn more at https://developers.cloudflare.com/workers/runtime-apis/r2/
-	// MY_BUCKET: R2Bucket;	
-	//
-	// Example binding to a Service. Learn more at https://developers.cloudflare.com/workers/runtime-apis/service-bindings/
-	// MY_SERVICE: Fetcher;
-	//
-	// Example binding to a Queue. Learn more at https://developers.cloudflare.com/queues/javascript-apis/
-	// MY_QUEUE: Queue;
-}
 
 export const foundry = /*#__PURE__*/ defineChain({
   id: 1,
@@ -77,6 +53,10 @@ export const uniswap: Uniswap = {
 }
 
 export const WETH = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
+export const V2_ROUTER = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
+// SHA3 hash of the string "Transfer(address,address,uint256)"
+export const TRANSFER = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+export const uint256Max = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
 
 // ==========================================
 // UNISWAP
