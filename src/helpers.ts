@@ -53,6 +53,7 @@ export const uniswap: Uniswap = {
 }
 
 export const WETH = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
+export const USDC = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
 export const V2_ROUTER = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
 // SHA3 hash of the string "Transfer(address,address,uint256)"
 export const TRANSFER = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
@@ -75,3 +76,19 @@ export const getBasisPointsMultiplier = (decimal: number | string) => {
 
   return 10 ** decimalLength;
 }
+
+export const bigintTransform = (obj: Record<string, any>) => {
+	const result: Record<string, any> = Object.keys(obj).reduce((acc, key) => {
+		const value = obj[key];
+		if (typeof value === 'bigint') {
+			return { ...acc, [key]: value.toString() };
+		} else if (typeof value === 'object') {
+			return { ...acc, [key]: bigintTransform(value) };
+		} else {
+			return { ...acc, [key]: value };
+		}
+	}, {})
+
+	return result
+}
+

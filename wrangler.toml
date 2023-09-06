@@ -7,12 +7,12 @@ compatibility_date = "2023-08-14"
 # Docs: https://developers.cloudflare.com/workers/platform/environment-variables
 [vars]
 RPC_URL = "http://localhost:8545"
-TWITTER_BOT_ADDRESS = "0x64f5219563e28EeBAAd91Ca8D31fa3b36621FD4f"
+TWITTER_BOT_ADDRESS = "0xf201fFeA8447AB3d43c98Da3349e0749813C9009"
 
 [[d1_databases]]
 binding = "DB"
 database_name = "testnet-db"
-database_id = "e04ffaf4-98e3-4a59-896d-48934026055d"
+database_id = "5d0ca550-93c9-40bc-8cf2-1452eb1d1bc4"
 
 # Bind a KV Namespace. Use KV as persistent storage for small key-value pairs.
 # Docs: https://developers.cloudflare.com/workers/runtime-apis/kv
