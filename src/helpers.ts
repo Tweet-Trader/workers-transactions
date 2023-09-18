@@ -1,4 +1,45 @@
 import { defineChain } from 'viem'
+import { type IRequest, error } from 'itty-router'
+import jwt from '@tsndr/cloudflare-worker-jwt'
+
+export type RequestBody = {
+	twitterId: string;
+	tokenAddress: `0x${string}`;
+	amount: string;
+	slippage: number;
+	decimals: number;
+	tokenPrice: number;
+}
+
+export const isAuthorized = async (request: IRequest, env: Env, ctx: ExecutionContext) => {
+	console.log("does it even get in here?");
+	let data;
+	try {
+		data = await request.json() as RequestBody;
+	} catch(error) {
+		console.error("error: ", error);
+	}
+	console.log("data: ", data);
+	console.log("auth header: ", request.headers.get('Authorization'));
+	const token = request.headers.get('Authorization')?.split(' ')?.[1];
+	const privateKey = await env.keys.get(data!.twitterId);
+	console.log("token: ", token)
+	console.log("twitter id: ", data!.twitterId);
+	console.log("private key: ", privateKey);
+
+	if (!token) return error(401, 'Unauthorized');
+	if (!privateKey) return error(404, 'User Not Found');
+
+	const isValid = await jwt.verify(token, `${privateKey}_access`);
+	if (!isValid) return error(401, 'Unauthorized');
+
+	request.data = data
+}
+
+// Check requests for a pre-shared secret
+export const isTwitterBot = (request: IRequest, env: Env, ctx: ExecutionContext) => {
+  if (request.headers.get('X-Custom-Auth-Key') !== env.TWITTER_BOT_AUTH_KEY_SECRET) return error(401, 'Unauthorized');
+};
 
 export const foundry = /*#__PURE__*/ defineChain({
   id: 1,
@@ -20,6 +61,28 @@ export const foundry = /*#__PURE__*/ defineChain({
     },
   },
 })
+
+export interface Env {
+	RPC_URL: string;
+	TWITTER_BOT_ADDRESS: `0x${string}`;
+	TWITTER_BOT_AUTH_KEY_SECRET: string;
+	// DB: 
+	// Example binding to KV. Learn more at https://developers.cloudflare.com/workers/runtime-apis/kv/
+	keys: KVNamespace;
+	DB:  D1Database;
+	//
+	// Example binding to Durable Object. Learn more at https://developers.cloudflare.com/workers/runtime-apis/durable-objects/
+	// MY_DURABLE_OBJECT: DurableObjectNamespace;
+	//
+	// Example binding to R2. Learn more at https://developers.cloudflare.com/workers/runtime-apis/r2/
+	// MY_BUCKET: R2Bucket;	
+	//
+	// Example binding to a Service. Learn more at https://developers.cloudflare.com/workers/runtime-apis/service-bindings/
+	// MY_SERVICE: Fetcher;
+	//
+	// Example binding to a Queue. Learn more at https://developers.cloudflare.com/queues/javascript-apis/
+	// MY_QUEUE: Queue;
+}
 
 // ==========================================
 // UNISWAP METHODS

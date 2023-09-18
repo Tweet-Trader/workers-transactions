@@ -1,6 +1,6 @@
 import { type IRequest } from 'itty-router'
 import { privateKeyToAccount } from 'viem/accounts'
-import { http, formatUnits, createPublicClient } from 'viem'
+import { http, formatUnits, createPublicClient, createWalletClient, publicActions } from 'viem'
 // import { mainnet } from 'viem/chains'
 import { v2FactoryAbi } from './abis/v2Factory'
 import { pairAbi } from './abis/pair'
@@ -36,6 +36,18 @@ export const getAccount = async (twitterId: string, env: Env) => {
 	return account;
 }
 
+export const setupViemClient = async (twitterId: string, env: Env) => {
+	const account = await getAccount(twitterId, env);
+
+	const client = createWalletClient({
+		// account,
+		chain: foundry,
+		transport: http(env.RPC_URL),
+	}).extend(publicActions);
+
+	return { account, client };
+}
+
 const setupClient = (env: Env) => {
 	const client = createPublicClient({
 		chain: foundry,
@@ -45,7 +57,7 @@ const setupClient = (env: Env) => {
   return client;
 }
 
-const fetchPairAddress = async (tokenAddress: `0x${string}`, env: Env) => {
+export const fetchPairAddress = async (tokenAddress: `0x${string}`, env: Env) => {
   const client = setupClient(env);
 	const pair = await client.readContract({
 		address: uniswap.factory['v2'],
@@ -69,7 +81,6 @@ export const fetchSymbol = async (tokenAddress: `0x${string}`, env: Env) => {
 }
 
 type Reserve = { 
-	pair: `0x${string}`; 
 	tokenReserves: bigint;
 	wethReserves: bigint;
 };
@@ -80,7 +91,7 @@ export const getTokenPrice = (token: Reserve, usdc: Reserve, decimals: number) =
 	return usdcWethRatio * wethTokenRatio;
 }
 
- const fetchTokenDecimals = async (tokenAddress: `0x${string}`, env: Env) => {
+const fetchTokenDecimals = async (tokenAddress: `0x${string}`, env: Env) => {
   const client = setupClient(env);
 	const decimals = await client.readContract({
 		address: tokenAddress,
@@ -91,6 +102,18 @@ export const getTokenPrice = (token: Reserve, usdc: Reserve, decimals: number) =
 	return decimals
 }
 
+export const fetchTokenBalance = async (walletAddress: `0x${string}`, tokenAddress: `0x${string}`, env: Env) => {
+  const client = setupClient(env);
+	const balance = await client.readContract({
+		address: tokenAddress,
+		abi: [{ name: "balanceOf", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], inputs: [{ internalType: "address", name: "account", type: "address" }], stateMutability: "view", type: "function" }] as const,
+		functionName: 'balanceOf',
+		args: [walletAddress]
+	})
+
+	return balance;
+}
+
 export const getPairAddress = async (request: IRequest, env: Env) => {
 	const tokenAddress = request.params.tokenAddress as `0x${string}`;
 	if (!tokenAddress) throw Error('Invalid Token Address');
@@ -99,9 +122,8 @@ export const getPairAddress = async (request: IRequest, env: Env) => {
 	return { pair }
 }
 
-export const getReserves = async (tokenAddress: `0x${string}`, env: Env): Promise<Reserve> => {
+export const getReserves = async (tokenAddress: `0x${string}`, pair: `0x${string}`, env: Env): Promise<Reserve> => {
   const client = setupClient(env);
-	const pair = await fetchPairAddress(tokenAddress, env);
 	const [token0Reserves, token1Reserves] = await client.readContract({
 		address: pair,
 		abi: pairAbi,
@@ -109,7 +131,6 @@ export const getReserves = async (tokenAddress: `0x${string}`, env: Env): Promis
 	});
 
 	return {
-		pair,
 		tokenReserves: tokenAddress < WETH ? token0Reserves : token1Reserves,
 		wethReserves: tokenAddress < WETH ? token1Reserves : token0Reserves,
 	}

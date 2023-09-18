@@ -1,6 +1,9 @@
-name = "twitter-transactions"
+name = "twitter-bot"
 main = "src/worker.ts"
 compatibility_date = "2023-08-14"
+
+account_id = "61292f3eabc97cdf988ce898d8ba6edd"
+workers_dev = true
 
 # Variable bindings. These are arbitrary, plaintext strings (similar to environment variables)
 # Note: Use secrets to store sensitive data.
